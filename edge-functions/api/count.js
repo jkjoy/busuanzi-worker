@@ -19,9 +19,18 @@ function getScriptName(url) {
   return url.searchParams.get('script') || 'count.js';
 }
 
+function getKvBinding(context) {
+  return context?.env?.my_kv || context?.my_kv || globalThis.my_kv || null;
+}
+
 async function handleCount(context) {
-  const { request, env } = context;
+  const { request } = context;
+  const kv = getKvBinding(context);
   const url = new URL(request.url);
+
+  if (!kv) {
+    return new Response('KV binding missing', { status: 500 });
+  }
 
   if (!isAllowedOrigin(request)) {
     return new Response('Forbidden', { status: 403 });
@@ -35,21 +44,21 @@ async function handleCount(context) {
   const pageDigest = await pageKey(page);
 
   // PV: shard to reduce contention.
-  await incrementShardedCounter(env.my_kv, makeSitePvPrefix(site), SHARDS);
-  await incrementShardedCounter(env.my_kv, makePagePvPrefix(site, pageDigest), SHARDS);
+  await incrementShardedCounter(kv, makeSitePvPrefix(site), SHARDS);
+  await incrementShardedCounter(kv, makePagePvPrefix(site, pageDigest), SHARDS);
 
   // UV: set once per visitor/site.
-  const uvSeen = await markUniqueVisitor(env.my_kv, makeSiteUvKey(site, visitorId));
+  const uvSeen = await markUniqueVisitor(kv, makeSiteUvKey(site, visitorId));
 
-  const sitePv = await sumShardedCounter(env.my_kv, makeSitePvPrefix(site), SHARDS);
-  const pagePv = await sumShardedCounter(env.my_kv, makePagePvPrefix(site, pageDigest), SHARDS);
+  const sitePv = await sumShardedCounter(kv, makeSitePvPrefix(site), SHARDS);
+  const pagePv = await sumShardedCounter(kv, makePagePvPrefix(site, pageDigest), SHARDS);
 
   // UV summary: approximate but stable per unique visitor.
   if (uvSeen) {
-    const currentUv = Number((await env.my_kv.get(makeSiteUvSummaryPrefix(site))) || 0);
-    await env.my_kv.put(makeSiteUvSummaryPrefix(site), String(currentUv + 1));
+    const currentUv = Number((await kv.get(makeSiteUvSummaryPrefix(site))) || 0);
+    await kv.put(makeSiteUvSummaryPrefix(site), String(currentUv + 1));
   }
-  const siteUv = Number((await env.my_kv.get(makeSiteUvSummaryPrefix(site))) || 0);
+  const siteUv = Number((await kv.get(makeSiteUvSummaryPrefix(site))) || 0);
 
   const payload = { site_pv: sitePv, site_uv: siteUv, page_pv: pagePv };
   if (callback) {
