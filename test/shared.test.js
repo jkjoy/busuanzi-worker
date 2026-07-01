@@ -130,6 +130,13 @@ test('busuanzi script shows cached counts before refreshing', () => {
   assert.match(js, /writeCached/);
 });
 
+test('busuanzi script resolves api against script origin instead of page origin', () => {
+  const js = buildBusuanziScript({ apiBase: '/api/count', scriptName: 'busuanzi.pure.mini.js' });
+  assert.match(js, /document\.currentScript/);
+  assert.match(js, /scriptOrigin/);
+  assert.match(js, /new URL\(API_BASE, scriptOrigin\(\)\)/);
+});
+
 test('busuanzi script contains expected ids and api path', () => {
   const js = buildBusuanziScript({ apiBase: '/api/count', scriptName: 'busuanzi.pure.mini.js' });
   assert.match(js, /busuanzi_value_site_pv/);

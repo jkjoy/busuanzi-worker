@@ -180,9 +180,21 @@ export function buildBusuanziScript({ apiBase = '/api/count', scriptName = 'busu
       return (Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '');
     }
   }
+  function scriptOrigin(){
+    try {
+      var current = document.currentScript;
+      if (current && current.src) return new URL(current.src, location.href).origin;
+      var scripts = document.getElementsByTagName('script');
+      for (var i = scripts.length - 1; i >= 0; i--) {
+        var src = scripts[i].src || '';
+        if (src.indexOf(SCRIPT_NAME) !== -1) return new URL(src, location.href).origin;
+      }
+    } catch (e) {}
+    return location.origin;
+  }
   function jsonp(callbackName, params){
     var s = document.createElement('script');
-    var url = new URL(API_BASE, location.href);
+    var url = new URL(API_BASE, scriptOrigin());
     Object.keys(params).forEach(function(k){ url.searchParams.set(k, params[k]); });
     url.searchParams.set('callback', callbackName);
     s.src = url.toString();
