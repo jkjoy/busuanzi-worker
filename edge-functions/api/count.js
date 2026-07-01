@@ -19,7 +19,7 @@ function getScriptName(url) {
   return url.searchParams.get('script') || 'count.js';
 }
 
-export async function onRequestGet(context) {
+async function handleCount(context) {
   const { request, env } = context;
   const url = new URL(request.url);
 
@@ -68,6 +68,9 @@ export async function onRequestGet(context) {
   return jsonResponse(payload);
 }
 
-export async function onRequest() {
-  return notFound();
+export default async function onRequest(context) {
+  if (context.request.method !== 'GET') {
+    return notFound();
+  }
+  return handleCount(context);
 }
