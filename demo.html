@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>EdgeOne Counter Demo</title>
+    <style>
+      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; line-height: 1.8; }
+      .box { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin: 16px 0; }
+      code { background: #111827; color: #f9fafb; padding: 2px 6px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>EdgeOne Counter Demo</h1>
+    <p>这个页面展示 busuanzi 最大兼容接入方式和自定义 ID 接入方式。</p>
+
+    <div class="box">
+      <h2>busuanzi 兼容版</h2>
+      <script async src="/busuanzi.pure.mini.js"></script>
+      <p>本站总访问量：<span id="busuanzi_value_site_pv">0</span></p>
+      <p>本站访客数：<span id="busuanzi_value_site_uv">0</span></p>
+      <p>本文访问量：<span id="busuanzi_value_page_pv">0</span></p>
+    </div>
+
+    <div class="box">
+      <h2>自定义版</h2>
+      <script async src="/count.js"></script>
+      <p>本站总访问量：<span id="eo_count_site_pv">0</span></p>
+      <p>本站访客数：<span id="eo_count_site_uv">0</span></p>
+      <p>本文访问量：<span id="eo_count_page_pv">0</span></p>
+    </div>
+
+    <div class="box">
+      <h2>API</h2>
+      <p>接口：<code>/api/count?site=example.com&amp;page=/demo</code></p>
+    </div>
+  </body>
+</html>
