@@ -3,51 +3,271 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>EdgeOne Counter</title>
+    <meta name="description" content="Busuanzi-compatible page view counter powered by EdgeOne Makers and KV." />
+    <title>Busuanzi Counter 文档 | EdgeOne Makers + KV</title>
     <style>
-      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 860px; margin: 40px auto; padding: 0 16px; line-height: 1.8; color: #111827; }
-      .card { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; margin: 18px 0; }
-      code, pre { background: #111827; color: #f9fafb; border-radius: 8px; }
-      code { padding: 2px 6px; }
-      pre { padding: 14px; overflow: auto; }
-      a { color: #2563eb; }
+      :root {
+        color-scheme: light;
+        --bg: #f6f8fb;
+        --panel: rgba(255, 255, 255, 0.86);
+        --panel-strong: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --brand: #2563eb;
+        --brand-2: #7c3aed;
+        --success: #059669;
+        --code-bg: #0f172a;
+        --code-text: #e5e7eb;
+        --shadow: 0 24px 80px rgba(15, 23, 42, 0.10);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.75;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.16), transparent 28%),
+          radial-gradient(circle at 88% 8%, rgba(124, 58, 237, 0.14), transparent 26%),
+          linear-gradient(180deg, #ffffff 0%, var(--bg) 42%, #eef3fb 100%);
+      }
+
+      a { color: var(--brand); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(18px);
+        background: rgba(255, 255, 255, 0.72);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      }
+      nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.02em; }
+      .logo {
+        width: 34px; height: 34px; border-radius: 12px;
+        background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.28);
+      }
+      .navlinks { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
+      .navlinks a { color: #334155; }
+
+      .hero { padding: 82px 0 44px; }
+      .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr); gap: 28px; align-items: center; }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+        background: rgba(255,255,255,.72); color: var(--muted); font-size: 14px;
+      }
+      h1 { margin: 18px 0 16px; font-size: clamp(38px, 6.8vw, 68px); line-height: 1.08; letter-spacing: -0.055em; }
+      .lead { font-size: clamp(18px, 2vw, 22px); color: #475569; max-width: 720px; margin: 0 0 24px; }
+      .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 44px; padding: 0 18px; border-radius: 12px; font-weight: 700;
+        border: 1px solid var(--line); background: #fff; color: #0f172a;
+        box-shadow: 0 8px 20px rgba(15,23,42,.06);
+      }
+      .btn.primary { border: none; color: white; background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
+
+      .stats-panel {
+        background: var(--panel);
+        border: 1px solid rgba(226,232,240,.9);
+        border-radius: 28px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+      .stats-panel h2 { margin: 0 0 14px; font-size: 18px; }
+      .stats { display: grid; gap: 12px; }
+      .stat {
+        padding: 18px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff, #f8fafc);
+        border: 1px solid var(--line);
+      }
+      .stat strong { display: block; font-size: 34px; line-height: 1.1; letter-spacing: -0.04em; }
+      .stat span { color: var(--muted); font-size: 14px; }
+
+      section { padding: 36px 0; }
+      .section-title { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+      h2 { margin: 0; font-size: clamp(26px, 4vw, 38px); line-height: 1.15; letter-spacing: -0.04em; }
+      .sub { color: var(--muted); margin: 6px 0 0; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .card {
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 12px 32px rgba(15,23,42,.06);
+      }
+      .card h3 { margin: 0 0 8px; font-size: 18px; }
+      .card p { margin: 0; color: var(--muted); }
+      .badge { display: inline-flex; padding: 4px 9px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; font-size: 12px; font-weight: 800; margin-bottom: 12px; }
+      .ok { background: #dcfce7; color: #047857; }
+      .warn { background: #fef3c7; color: #92400e; }
+
+      .doc-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; align-items: start; }
+      .toc { position: sticky; top: 78px; }
+      .toc a { display: block; color: #475569; padding: 8px 10px; border-radius: 10px; font-size: 14px; }
+      .toc a:hover { background: #eff6ff; text-decoration: none; }
+      .doc { display: grid; gap: 18px; }
+      .doc-card { background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 24px; padding: 24px; }
+      .doc-card h3 { margin-top: 0; font-size: 24px; letter-spacing: -0.03em; }
+      pre {
+        margin: 14px 0 0;
+        padding: 16px;
+        overflow: auto;
+        border-radius: 16px;
+        background: var(--code-bg);
+        color: var(--code-text);
+        line-height: 1.6;
+      }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+      :not(pre) > code { background: #e2e8f0; color: #0f172a; padding: 2px 6px; border-radius: 7px; }
+      ol, ul { padding-left: 1.25rem; }
+      li { margin: 6px 0; }
+      footer { padding: 42px 0 64px; color: var(--muted); text-align: center; }
+
+      @media (max-width: 860px) {
+        .hero-grid, .doc-layout { grid-template-columns: 1fr; }
+        .grid { grid-template-columns: 1fr; }
+        .toc { position: static; display: grid; grid-template-columns: repeat(2, 1fr); }
+        .navlinks { display: none; }
+      }
     </style>
   </head>
   <body>
-    <h1>EdgeOne Counter</h1>
-    <p>一个兼容 busuanzi 的轻量计数工具，适合博客、文档站和个人站点。</p>
+    <header>
+      <div class="wrap">
+        <nav>
+          <a class="brand" href="#top" aria-label="Busuanzi Counter 首页"><span class="logo"></span><span>Busuanzi Counter</span></a>
+          <div class="navlinks">
+            <a href="#install">快速接入</a>
+            <a href="#deploy">部署说明</a>
+            <a href="#api">接口</a>
+            <a href="#troubleshooting">排错</a>
+          </div>
+        </nav>
+      </div>
+    </header>
 
-    <div class="card">
-      <h2>快速开始</h2>
-      <p>如果你只是想验证页面效果，直接打开：</p>
-      <p><a href="/demo.html">/demo.html</a></p>
-    </div>
+    <main id="top">
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <div class="eyebrow">EdgeOne Makers + KV · busuanzi 兼容统计服务</div>
+            <h1>轻量、兼容、可自托管的浏览统计</h1>
+            <p class="lead">将原版 busuanzi 接入体验迁移到自己的 EdgeOne 服务上，支持站点 PV、站点 UV、页面 PV，并针对 KV 热路径做了低延迟优化。</p>
+            <div class="actions">
+              <a class="btn primary" href="#install">开始接入</a>
+              <a class="btn" href="/demo.html">查看 Demo</a>
+              <a class="btn" href="https://busuanzi.loliko.cn/api/count?site=busuanzi.loliko.cn&page=/&vid=docs-preview&callback=cb" target="_blank" rel="noreferrer">测试 API</a>
+            </div>
+          </div>
 
-    <div class="card">
-      <h2>busuanzi 最大兼容</h2>
-      <pre>&lt;script async src="https://busuanzi.loliko.cn/busuanzi.pure.mini.js"&gt;&lt;/script&gt;
+          <aside class="stats-panel" aria-label="本站实时统计">
+            <h2>本站实时统计</h2>
+            <div class="stats">
+              <div class="stat"><strong id="busuanzi_value_site_pv">0</strong><span>本站总访问量 Site PV</span></div>
+              <div class="stat"><strong id="busuanzi_value_site_uv">0</strong><span>本站访客数 Site UV</span></div>
+              <div class="stat"><strong id="busuanzi_value_page_pv">0</strong><span>本文档页访问量 Page PV</span></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="grid">
+            <div class="card"><span class="badge ok">兼容</span><h3>原版 ID 可直接用</h3><p>支持 <code>busuanzi_value_site_pv</code>、<code>busuanzi_value_site_uv</code>、<code>busuanzi_value_page_pv</code>。</p></div>
+            <div class="card"><span class="badge">自托管</span><h3>部署在自己的域名</h3><p>脚本和 API 均由 <code>busuanzi.loliko.cn</code> 提供，不依赖第三方公共服务。</p></div>
+            <div class="card"><span class="badge warn">优化</span><h3>低 KV 操作热路径</h3><p>API 请求使用快速总数 key，并在前端先显示缓存，再异步刷新，减少等待感。</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap doc-layout">
+          <aside class="toc card">
+            <a href="#install">1. 快速接入</a>
+            <a href="#custom">2. 自定义 ID</a>
+            <a href="#deploy">3. 部署说明</a>
+            <a href="#api">4. API</a>
+            <a href="#troubleshooting">5. 排错</a>
+            <a href="#notes">6. 注意事项</a>
+          </aside>
+
+          <div class="doc">
+            <article class="doc-card" id="install">
+              <h3>1. 快速接入：busuanzi 最大兼容</h3>
+              <p>在任意网页中加入下面代码即可。脚本会自动把统计请求发送到 <code>https://busuanzi.loliko.cn/api/count</code>，同时按当前页面域名和 URL 记录统计。</p>
+              <pre><code>&lt;script async src="https://busuanzi.loliko.cn/busuanzi.pure.mini.js?v=3"&gt;&lt;/script&gt;
 
 本站总访问量：&lt;span id="busuanzi_value_site_pv"&gt;0&lt;/span&gt;
 本站访客数：&lt;span id="busuanzi_value_site_uv"&gt;0&lt;/span&gt;
-本文访问量：&lt;span id="busuanzi_value_page_pv"&gt;0&lt;/span&gt;</pre>
-    </div>
+本文访问量：&lt;span id="busuanzi_value_page_pv"&gt;0&lt;/span&gt;</code></pre>
+            </article>
 
-    <div class="card">
-      <h2>自定义版</h2>
-      <pre>&lt;script async src="https://busuanzi.loliko.cn/count.js"&gt;&lt;/script&gt;
+            <article class="doc-card" id="custom">
+              <h3>2. 自定义 ID 接入</h3>
+              <p>如果你不想使用 busuanzi 的 DOM ID，也可以使用 <code>eo_count_*</code> ID。</p>
+              <pre><code>&lt;script async src="https://busuanzi.loliko.cn/count.js?v=3"&gt;&lt;/script&gt;
 
 本站总访问量：&lt;span id="eo_count_site_pv"&gt;0&lt;/span&gt;
 本站访客数：&lt;span id="eo_count_site_uv"&gt;0&lt;/span&gt;
-本文访问量：&lt;span id="eo_count_page_pv"&gt;0&lt;/span&gt;</pre>
-    </div>
+本文访问量：&lt;span id="eo_count_page_pv"&gt;0&lt;/span&gt;</code></pre>
+            </article>
 
-    <div class="card">
-      <h2>接口</h2>
-      <ul>
-        <li><code>/count.js</code></li>
-        <li><code>/busuanzi.pure.mini.js</code></li>
-        <li><code>/api/count</code></li>
-      </ul>
-    </div>
+            <article class="doc-card" id="deploy">
+              <h3>3. EdgeOne Makers 部署说明</h3>
+              <ol>
+                <li>在 EdgeOne Makers 创建项目并关联仓库。</li>
+                <li>在 KV Storage 中创建命名空间，例如 <code>busuanzi</code>。</li>
+                <li>把 KV 命名空间绑定到当前项目，变量名设置为 <code>my_kv</code>。</li>
+                <li>部署后确认以下地址可访问：<code>/count.js</code>、<code>/busuanzi.pure.mini.js</code>、<code>/api/count</code>。</li>
+              </ol>
+            </article>
+
+            <article class="doc-card" id="api">
+              <h3>4. API 调用格式</h3>
+              <p>脚本会自动生成 JSONP 请求；你也可以手动测试：</p>
+              <pre><code>https://busuanzi.loliko.cn/api/count?site=example.com&amp;page=/hello&amp;vid=test&amp;callback=cb</code></pre>
+              <p>返回示例：</p>
+              <pre><code>cb({"site_pv":1,"site_uv":1,"page_pv":1})</code></pre>
+            </article>
+
+            <article class="doc-card" id="troubleshooting">
+              <h3>5. 常见问题排错</h3>
+              <ul>
+                <li>如果控制台请求到了 <code>https://你的博客域名/api/count</code>，说明使用了旧脚本，请给脚本 URL 加 <code>?v=3</code> 强制刷新缓存。</li>
+                <li>如果 <code>/api/count</code> 返回 404，检查 Makers 是否识别 <code>edge-functions/api/count.js</code>。</li>
+                <li>如果返回 545，优先检查 KV 绑定变量名是否是 <code>my_kv</code>，以及 KV key 是否只含字母、数字、下划线。</li>
+              </ul>
+            </article>
+
+            <article class="doc-card" id="notes">
+              <h3>6. 统计说明</h3>
+              <ul>
+                <li><strong>Site PV</strong>：站点总访问量。</li>
+                <li><strong>Site UV</strong>：基于本地 visitor id 的站点访客数。</li>
+                <li><strong>Page PV</strong>：当前页面访问量。</li>
+                <li>KV 是最终一致性存储，极高并发下短时间内可能存在轻微误差。</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">Powered by EdgeOne Makers + KV · Compatible with busuanzi</div>
+    </footer>
+
+    <script async src="https://busuanzi.loliko.cn/busuanzi.pure.mini.js?v=3"></script>
   </body>
 </html>
