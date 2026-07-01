@@ -47,7 +47,7 @@ DEPLOYMENT.md
 ### busuanzi 最大兼容
 
 ```html
-<script async src="https://your-domain.example/busuanzi.pure.mini.js"></script>
+<script async src="https://busuanzi.loliko.cn/busuanzi.pure.mini.js"></script>
 
 本站总访问量：<span id="busuanzi_value_site_pv">0</span>
 本站访客数：<span id="busuanzi_value_site_uv">0</span>
@@ -57,7 +57,7 @@ DEPLOYMENT.md
 ### 自定义 ID
 
 ```html
-<script async src="https://your-domain.example/count.js"></script>
+<script async src="https://busuanzi.loliko.cn/count.js"></script>
 
 本站总访问量：<span id="eo_count_site_pv">0</span>
 本站访客数：<span id="eo_count_site_uv">0</span>

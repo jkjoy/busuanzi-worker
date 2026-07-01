@@ -50,9 +50,9 @@ edgeone-counter/
 
 部署后你会得到类似这样的地址：
 
-- `https://your-domain.example/count.js`
-- `https://your-domain.example/busuanzi.pure.mini.js`
-- `https://your-domain.example/api/count`
+- `https://busuanzi.loliko.cn/count.js`
+- `https://busuanzi.loliko.cn/busuanzi.pure.mini.js`
+- `https://busuanzi.loliko.cn/api/count`
 
 ## 前端接入
 
