@@ -88,6 +88,25 @@ export function makeSiteUvSummaryPrefix(site) {
   return `site_${safeKvPart(site)}_uv_summary`;
 }
 
+export function makeSitePvTotalKey(site) {
+  return `site_${safeKvPart(site)}_pv_total`;
+}
+
+export function makePagePvTotalKey(site, key) {
+  return `page_${safeKvPart(site)}_${safeKvPart(key)}_pv_total`;
+}
+
+export async function incrementCounter(kv, key) {
+  const current = Number((await kv.get(key)) || 0);
+  const next = current + 1;
+  await kv.put(key, String(next));
+  return next;
+}
+
+export async function getCounter(kv, key) {
+  return Number((await kv.get(key)) || 0);
+}
+
 export async function incrementShardedCounter(kv, prefix, shards = DEFAULT_SHARDS, shardIndex = null) {
   const shard = shardIndex === null ? Math.floor(Math.random() * shards) : shardIndex % shards;
   const key = `${prefix}_${shard}`;
@@ -136,6 +155,20 @@ export function buildBusuanziScript({ apiBase = '/api/count', scriptName = 'busu
   function pageUrl(){ return location.href.split('#')[0]; }
   function host(){ return location.hostname.toLowerCase(); }
   function storageKey(){ return 'eo_busuanzi_vid:' + host(); }
+  function cacheKey(){ return 'eo_busuanzi_cache:' + host() + ':' + pageUrl(); }
+  function readCached(){
+    try {
+      var cached = localStorage.getItem(cacheKey());
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function writeCached(data){
+    try {
+      if (data) localStorage.setItem(cacheKey(), JSON.stringify(data));
+    } catch (e) {}
+  }
   function getVisitorId(){
     try {
       var existing = localStorage.getItem(storageKey());
@@ -162,7 +195,10 @@ export function buildBusuanziScript({ apiBase = '/api/count', scriptName = 'busu
     setValue(IDS.sitePv, data.site_pv || 0);
     setValue(IDS.siteUv, data.site_uv || 0);
     setValue(IDS.pagePv, data.page_pv || 0);
+    writeCached(data);
   }
+  var cached = readCached();
+  if (cached) update(cached);
   var cb = '__eoBusuanzi_' + Math.random().toString(36).slice(2);
   window[cb] = function(payload){
     try { update(payload); } finally {

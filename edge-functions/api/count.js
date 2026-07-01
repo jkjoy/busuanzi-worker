@@ -1,4 +1,4 @@
-import { jsonResponse, notFound, normalizePage, normalizeSite, pageKey, visitorFingerprint, incrementShardedCounter, sumShardedCounter, makeSitePvPrefix, makePagePvPrefix, makeSiteUvKey, makeSiteUvSummaryPrefix, markUniqueVisitor, buildJsonpPayload } from '../shared.js';
+import { jsonResponse, notFound, normalizePage, normalizeSite, pageKey, visitorFingerprint, makeSiteUvKey, makeSiteUvSummaryPrefix, markUniqueVisitor, buildJsonpPayload, makeSitePvTotalKey, makePagePvTotalKey, incrementCounter, getCounter } from '../shared.js';
 
 const SHARDS = 16;
 
@@ -43,22 +43,18 @@ async function handleCount(context) {
   const scriptName = getScriptName(url);
   const pageDigest = await pageKey(page);
 
-  // PV: shard to reduce contention.
-  await incrementShardedCounter(kv, makeSitePvPrefix(site), SHARDS);
-  await incrementShardedCounter(kv, makePagePvPrefix(site, pageDigest), SHARDS);
+  // Fast counters: keep hot path smooth by avoiding per-request shard aggregation.
+  const sitePv = await incrementCounter(kv, makeSitePvTotalKey(site));
+  const pagePv = await incrementCounter(kv, makePagePvTotalKey(site, pageDigest));
 
   // UV: set once per visitor/site.
   const uvSeen = await markUniqueVisitor(kv, makeSiteUvKey(site, visitorId));
 
-  const sitePv = await sumShardedCounter(kv, makeSitePvPrefix(site), SHARDS);
-  const pagePv = await sumShardedCounter(kv, makePagePvPrefix(site, pageDigest), SHARDS);
-
   // UV summary: approximate but stable per unique visitor.
   if (uvSeen) {
-    const currentUv = Number((await kv.get(makeSiteUvSummaryPrefix(site))) || 0);
-    await kv.put(makeSiteUvSummaryPrefix(site), String(currentUv + 1));
+    await incrementCounter(kv, makeSiteUvSummaryPrefix(site));
   }
-  const siteUv = Number((await kv.get(makeSiteUvSummaryPrefix(site))) || 0);
+  const siteUv = await getCounter(kv, makeSiteUvSummaryPrefix(site));
 
   const payload = { site_pv: sitePv, site_uv: siteUv, page_pv: pagePv };
   if (callback) {

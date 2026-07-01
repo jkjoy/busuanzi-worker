@@ -18,15 +18,21 @@ import {
 
 function createFakeKV() {
   const map = new Map();
+  let operations = 0;
   return {
     async get(key) {
+      operations += 1;
       return map.has(key) ? map.get(key) : null;
     },
     async put(key, value) {
+      operations += 1;
       map.set(key, String(value));
     },
     dump() {
       return map;
+    },
+    operationCount() {
+      return operations;
     },
   };
 }
@@ -106,6 +112,22 @@ test('api count increments pv and first visitor uv with safe KV keys', async () 
   for (const key of kv.dump().keys()) {
     assert.match(key, /^[A-Za-z0-9_]+$/);
   }
+});
+
+test('api count keeps KV operations low for smoother loading', async () => {
+  const kv = createFakeKV();
+  const request = new Request('https://busuanzi.loliko.cn/api/count?site=busuanzi.loliko.cn&page=/demo.html&vid=smooth-test&callback=cb');
+  const response = await countHandler({ request, env: { my_kv: kv } });
+
+  assert.equal(response.status, 200);
+  assert.ok(kv.operationCount() <= 10, `expected <= 10 KV operations, got ${kv.operationCount()}`);
+});
+
+test('busuanzi script shows cached counts before refreshing', () => {
+  const js = buildBusuanziScript({ apiBase: '/api/count', scriptName: 'busuanzi.pure.mini.js' });
+  assert.match(js, /eo_busuanzi_cache:/);
+  assert.match(js, /readCached/);
+  assert.match(js, /writeCached/);
 });
 
 test('busuanzi script contains expected ids and api path', () => {
