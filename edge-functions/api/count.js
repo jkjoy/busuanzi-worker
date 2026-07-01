@@ -39,13 +39,12 @@ async function handleCount(context) {
   await incrementShardedCounter(env.my_kv, makePagePvPrefix(site, pageDigest), SHARDS);
 
   // UV: set once per visitor/site.
-  await markUniqueVisitor(env.my_kv, makeSiteUvKey(site, visitorId));
+  const uvSeen = await markUniqueVisitor(env.my_kv, makeSiteUvKey(site, visitorId));
 
   const sitePv = await sumShardedCounter(env.my_kv, makeSitePvPrefix(site), SHARDS);
   const pagePv = await sumShardedCounter(env.my_kv, makePagePvPrefix(site, pageDigest), SHARDS);
 
   // UV summary: approximate but stable per unique visitor.
-  const uvSeen = await markUniqueVisitor(env.my_kv, makeSiteUvKey(site, visitorId));
   if (uvSeen) {
     const currentUv = Number((await env.my_kv.get(makeSiteUvSummaryPrefix(site))) || 0);
     await env.my_kv.put(makeSiteUvSummaryPrefix(site), String(currentUv + 1));

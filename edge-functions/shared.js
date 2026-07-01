@@ -66,25 +66,31 @@ export async function visitorFingerprint(request, site, page) {
   return hex.slice(0, VISITOR_ID_LENGTH);
 }
 
+export function safeKvPart(value) {
+  const raw = String(value || '').toLowerCase();
+  const safe = raw.replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+  return safe || 'default';
+}
+
 export function makeSitePvPrefix(site) {
-  return `site:${site}:pv`;
+  return `site_${safeKvPart(site)}_pv`;
 }
 
 export function makePagePvPrefix(site, key) {
-  return `page:${site}:${key}:pv`;
+  return `page_${safeKvPart(site)}_${safeKvPart(key)}_pv`;
 }
 
 export function makeSiteUvKey(site, visitorId) {
-  return `site:${site}:uv:${visitorId}`;
+  return `site_${safeKvPart(site)}_uv_${safeKvPart(visitorId)}`;
 }
 
 export function makeSiteUvSummaryPrefix(site) {
-  return `site:${site}:uv:summary`;
+  return `site_${safeKvPart(site)}_uv_summary`;
 }
 
 export async function incrementShardedCounter(kv, prefix, shards = DEFAULT_SHARDS, shardIndex = null) {
   const shard = shardIndex === null ? Math.floor(Math.random() * shards) : shardIndex % shards;
-  const key = `${prefix}:${shard}`;
+  const key = `${prefix}_${shard}`;
   const current = Number((await kv.get(key)) || 0);
   const next = current + 1;
   await kv.put(key, String(next));
@@ -93,7 +99,7 @@ export async function incrementShardedCounter(kv, prefix, shards = DEFAULT_SHARD
 
 export async function sumShardedCounter(kv, prefix, shards = DEFAULT_SHARDS) {
   const values = await Promise.all(
-    Array.from({ length: shards }, async (_, i) => Number((await kv.get(`${prefix}:${i}`)) || 0))
+    Array.from({ length: shards }, async (_, i) => Number((await kv.get(`${prefix}_${i}`)) || 0))
   );
   return values.reduce((a, b) => a + b, 0);
 }
